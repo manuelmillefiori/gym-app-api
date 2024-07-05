@@ -7,6 +7,7 @@
  * 3) Fix Date Corso
  */
 
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -16,7 +17,7 @@ const port = 3000;
 
 // Configuring CORS options
 var corsOptions = {
-   origin: 'http://localhost:5173',
+   origin: process.env.CORS_URI,
    optionsSuccessStatus: 200
 }
 
@@ -27,7 +28,7 @@ app.use(express.json());
 app.use(cors(corsOptions));
 
 // MongoDB connection
-mongoose.connect("mongodb://localhost:27017/test-db").then(() => {
+mongoose.connect(process.env.DB_URI).then(() => {
    console.log("Connected to MongoDB");
 }).catch(err => {
    console.error("Could not connect to MongoDB", err);
