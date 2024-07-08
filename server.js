@@ -7,11 +7,14 @@
  * 3) Fix Date Corso
  */
 
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const { v4: uuidv4 } = require("uuid");
+import { formatDate } from "./utility.js";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import { v4 as uuidv4} from "uuid"
+import dotenv from "dotenv";
+
+dotenv.config();
 const app = express();
 const port = 3000;
 
