@@ -7,7 +7,6 @@
  * 3) Fix Date Corso
  */
 
-import { formatDate } from "./utility.js";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -72,10 +71,61 @@ app.get("/", (req, res) => {
 app.get("/members", async (req, res) => {
    console.log("Getting all the members...");
 
+   // Dichiarazione membri
+   let members = [];
+
    try {
-      // Obtain members data (wait the response)
-      // Only 3 fields
-      const members = await Member.find({}).select("_id name surname");
+      // Ottengo la ricerca
+      const search = req.query.search;
+
+      // Verifico che sia stato passato un
+      // query parameter di ricerca
+      if (search && search != "") {
+         // Creo il filtro case-insensitive
+         const filter = new RegExp(search, "i");
+
+         // Filtro la ricerca sul nome e sul cognome
+         const query = [
+            {
+               $match: {
+                  $or: [
+                     {
+                        $expr: {
+                           $regexMatch: {
+                              input: { $concat: ["$name", " ", "$surname"] },
+                              regex: filter
+                           }
+                        }
+                     },
+                     {
+                        $expr: {
+                           $regexMatch: {
+                              input: { $concat: ["$surname", " ", "$name"] },
+                              regex: filter
+                           }
+                        }
+                     }
+                  ]
+               }
+            },
+            {
+               $project: {
+                  _id: 1,
+                  name: 1,
+                  surname: 1
+               }
+            }
+         ];
+
+         // Obtain members data (wait the response) with filters
+         // Only 3 fields
+         members = await Member.aggregate(query);
+      }
+      else {
+         // Obtain members data (wait the response)
+         // Only 3 fields
+         members = await Member.find({}).select("_id name surname");
+      }
 
       res.status(200).json(members);
    } catch (error) {
@@ -147,10 +197,62 @@ app.put("/members/:_id/edit", async (req, res) => {
 app.get("/courses", async (req, res) => {
    console.log("Getting all the courses...");
 
+   // Dichiarazione corsi
+   let courses = [];
+
    try {
-      // Obtain courses data (wait the response)
-      // Only 4 fields
-      const courses = await Course.find({}).select("_id title instructorName instructorSurname");
+      // Ottengo la ricerca
+      const search = req.query.search;
+
+      // Verifico che sia stato passato un
+      // query parameter di ricerca
+      if (search && search != "") {
+         // Creo il filtro case-insensitive
+         const filter = new RegExp(search, "i");
+
+         // Filtro la ricerca sul titolo del corso e sull'istruttore
+         const query = [
+            {
+               $match: {
+                  $or: [
+                     {
+                        $expr: {
+                           $regexMatch: {
+                              input: { $concat: ["$title", " ", "$instructorName", " ", "$instructorSurname"] },
+                              regex: filter
+                           }
+                        }
+                     },
+                     {
+                        $expr: {
+                           $regexMatch: {
+                              input: { $concat: ["$instructorName", " ", "$instructorSurname", " ", "$title"] },
+                              regex: filter
+                           }
+                        }
+                     }
+                  ]
+               }
+            },
+            {
+               $project: {
+                  _id: 1,
+                  title: 1,
+                  instructorName: 1,
+                  instructorSurname: 1
+               }
+            }
+         ];
+
+         // Obtain courses data (wait the response) with filters
+         // Only 4 fields
+         courses = await Course.aggregate(query);
+      }
+      else {
+         // Obtain courses data (wait the response)
+         // Only 4 fields
+         courses = await Course.find({}).select("_id title instructorName instructorSurname");
+      }
 
       res.status(200).json(courses);
    } catch (error) {
